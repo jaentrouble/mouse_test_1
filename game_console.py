@@ -22,7 +22,7 @@ class Game_Console() :
         self.width = width
         self.screen = pygame.display.set_mode((self.width, self.height))
         self.background = pygame.Surface((self.width, self.height))
-        self.bg_color = kwargs.pop('background', BLACK)
+        self.bg_color = kwargs.pop('background', RED)
         self.background.fill(self.bg_color)
         self.background.convert()
         self.clock = pygame.time.Clock()
