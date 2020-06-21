@@ -1,12 +1,12 @@
 import gym
-from viewer import Viewer
+
 
 class MouseEnv(gym.Env) :
     metadata = {
         'render.modes' : ['human']
     }
     def __init__(self):
-        pass
+        self.viewer = None
 
     def step(self, action):
         observation, reward, done, info = None, None, None, None
@@ -17,7 +17,11 @@ class MouseEnv(gym.Env) :
         pass
 
     def render(self, mode='human'):
-        pass
+        
+        if 'human' in mode :
+            from gym.envs.classic_control import rendering
+            if self.viewer == None:
+                self.viewer = rendering.SimpleImageViewer()
 
     def close(self):
         pass
