@@ -50,7 +50,7 @@ class Viewer() :
 #testing
 if __name__ == '__main__':
     import time
-    a = np.random.randint(0,255,(720,720,3),dtype=np.uint8)
+    a = np.random.randint(0,255,(720,300,3),dtype=np.uint8)
     print(a.dtype)
     v = Viewer()
     v.render(a,True)
