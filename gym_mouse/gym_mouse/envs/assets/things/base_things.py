@@ -10,7 +10,6 @@ class Base():
     It is interpretable as img[rr,cc,:] = color
 
     It doesn't care about the screen size by default.
-    TODO:Add the function to subclasses or handle in Engine.
     """
     def __init__(self):
         self._rr = None

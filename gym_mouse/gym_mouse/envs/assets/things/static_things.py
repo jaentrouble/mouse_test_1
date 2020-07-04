@@ -16,5 +16,6 @@ class Apple(Base):
         shape : Maximum size of the grid
         """
         super().__init__()
+        self._shape = shape
         self.indices = draw.disk(center, radius, shape=shape)
         self.color = colors.COLOR_APPLE

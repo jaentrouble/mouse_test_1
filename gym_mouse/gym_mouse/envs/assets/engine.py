@@ -1,6 +1,7 @@
 import numpy as np
 from .managers import *
 from .things.static_things import Apple
+from .things.dynamic_things import Mouse
 from ..constants import colors
 
 
@@ -36,7 +37,9 @@ class Engine():
         """Initiate and register things to thingsmanager"""
         #TODO: Just for testing. Change to final version later
         self.The_apple = Apple((150,150), self.size)
+        self.The_mouse = Mouse((300,300),3, self.size)
         self._TM.regist(self.The_apple)
+        self._TM.regist(self.The_mouse)
         for color, idx in self._TM.all_color:
             self._image[idx[0],idx[1]] = color
 
