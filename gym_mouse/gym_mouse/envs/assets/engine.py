@@ -3,9 +3,6 @@ from .managers import *
 from .things.static_things import Apple
 
 
-#TODO: Implement simple things to the engine and make the gym run first.
-#       If it runs well, then add all fancy stuffs.
-
 #TODO: When drawing things on a grid or an image, do it in the order of id.
 #       This is to get consistent across engine and collision manager.
 
@@ -41,6 +38,7 @@ class Engine():
         self._TM.regist(self.The_apple)
         for color, idx in self._TM.all_color.items():
             self._image[idx[0],idx[1]] = color
+            print(color)
 
     def update(self, action):
         reward = self._CM.update(action)

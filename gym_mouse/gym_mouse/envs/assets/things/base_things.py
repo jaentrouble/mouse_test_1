@@ -24,7 +24,7 @@ class Base():
     @property
     def indices(self):
         """Get current indices"""
-        if self._rr == None or self._cc == None:
+        if self._rr is None or self._cc is None:
             raise NotImplementedError('No rr or cc')
         return self._rr, self._cc
     
@@ -41,7 +41,7 @@ class Base():
     @property
     def color(self):
         """Get current color"""
-        if self._color == None:
+        if self._color is None:
             raise NotImplementedError('No color')
         return self._color
 
@@ -52,10 +52,11 @@ class Base():
         color : (R, G, B)
         anything under 0 will be 0 and anything above 255 will be 255
         """
-        color = np.array(color)
-        color = (color < 0) * 0
-        color = (color > 255) * 255
-        self._color = color
+        color = np.array(color, dtype=np.uint8)
+        for idx, c in enumerate(color):
+            if c > 255 : color[idx] = 255
+            elif c < 0 : color[idx] = 0
+        self._color = tuple(color)
 
     @property
     def is_updated(self):
