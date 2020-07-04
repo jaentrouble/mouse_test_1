@@ -1,6 +1,7 @@
 import numpy as np
 
 # Managers to help engine
+# TODO: Make a mouse(or any moving things) and implement update of CollisionManager
 
 class ThingsManager():
     """
@@ -31,47 +32,61 @@ class ThingsManager():
 
     @property
     def all_id(self) :
-        """Returns {ID : (rr, cc)} dict for all things"""
-        all_dict = {}
+        """Returns zip(ID , (rr, cc)) dict for all things"""
+        ID_list = []
+        idx_list = []
         for k, v in self._id_dict.items():
-            all_dict[k] = v.indices
-        return all_dict
+            ID_list.append(k)
+            idx_list.append(v.indices)
+        return zip(ID_list, idx_list)
 
     @property
     def all_color(self) :
-        """Returns {(R,G,B) : (rr, cc)} dict for all things"""
-        all_dict = {}
+        """Returns zip((R,G,B), (rr, cc)) for all things"""
+        color_list = []
+        idx_list = []
         for _, v in self._id_dict.items():
-            all_dict[v.color] = v.indices
-        return all_dict
+            color_list.append(v.color)
+            idx_list.append(v.indices)
+        return zip(color_list, idx_list)
 
     @property
     def updated_id(self) :
         """Returns 
-        (Last{ID : (rr, cc)}, New{ID : (rr, cc)})
+        (Last_zip(ID, (rr, cc)), New_zip(ID, (rr, cc)))
         for updated things
         """
-        updated_dict = {}
-        last_dict = {}
+        updated_ID_list = []
+        updated_idx_list = []
+        last_ID_list = []
+        last_idx_list = []
         for k, v in self._id_dict.items():
             if v.is_updated :
-                updated_dict[k] = v.indices
-                last_dict[k] = v.last_indices
-        return last_dict, updated_dict
+                updated_ID_list.append(k)
+                updated_idx_list.append(v.indices)
+                last_ID_list.append(k)
+                last_idx_list.append(v.last_indices)
+        return (zip(updated_ID_list, updated_idx_list),
+                zip(last_ID_list, last_idx_list))
 
     @property
     def updated_color(self):
         """Returns 
-        (Last{(R,G,B) : (rr, cc)}, New{(R,G,B) : (rr, cc)})
+        (Last_zip((R,G,B) : (rr, cc)), New_zip((R,G,B) : (rr, cc)))
         for updated things
         """
-        updated_dict = {}
-        last_dict = {}
+        updated_color_list = []
+        updated_idx_list = []
+        last_color_list = []
+        last_idx_list = []
         for _, v in self._id_dict.items():
             if v.is_updated :
-                updated_dict[v.color] = v.indices
-                last_dict[v.color] = v.last_indices
-        return last_dict, updated_dict
+                updated_color_list.append(v.color)
+                updated_idx_list.append(v.indices)
+                last_color_list.append(v.color)
+                last_idx_list.append(v.last_indices)
+        return (zip(updated_color_list, updated_idx_list),
+                zip(last_color_list, last_idx_list))
 
     def reset_updated(self):
         """Reset all is_updated to False""" # Reset at Engine, not CollisionManager
@@ -85,7 +100,7 @@ class CollisionManager():
     """
     def __init__(self, size, tmanager:ThingsManager):
         self._grid = np.zeros(size, dtype=np.int32)
-        for ID, idx in tmanager.all_id.items():
+        for ID, idx in tmanager.all_id:
             self._grid[idx[0], idx[1]] = ID
 
     def update(self, action):

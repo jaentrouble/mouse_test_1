@@ -18,6 +18,7 @@ class Base():
         # For efficiency of drawing things, save last indices if changed
         self._last_rr = None
         self._last_cc = None
+        # Color can be a tuple or an array of color per pixel
         self._color = None
         self._is_updated = False
 
@@ -54,13 +55,9 @@ class Base():
         """
         Set color
         color : (R, G, B)
-        anything under 0 will be 0 and anything above 255 will be 255
+        This will be changed to np.uint8, so be careful for overflow
         """
-        color = np.array(color, dtype=np.uint8)
-        for idx, c in enumerate(color):
-            if c > 255 : color[idx] = 255
-            elif c < 0 : color[idx] = 0
-        self._color = tuple(color)
+        self._color = np.array(color, dtype=np.uint8)
 
     @property
     def is_updated(self):

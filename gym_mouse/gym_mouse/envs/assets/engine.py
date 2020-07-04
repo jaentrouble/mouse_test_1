@@ -37,15 +37,15 @@ class Engine():
         #TODO: Just for testing. Change to final version later
         self.The_apple = Apple((150,150), self.size)
         self._TM.regist(self.The_apple)
-        for color, idx in self._TM.all_color.items():
+        for color, idx in self._TM.all_color:
             self._image[idx[0],idx[1]] = color
 
     def update(self, action):
         reward = self._CM.update(action)
         last, updated = self._TM.updated_color
-        for _, idx in last.items():
+        for _, idx in last:
             self._image[idx[0],idx[1]] = colors.COLOR_BACKGROUND
-        for color, idx in updated.items():
+        for color, idx in updated:
             self._image[idx[0],idx[1]] = color
         self._TM.reset_updated()
         return reward
