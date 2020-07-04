@@ -1,6 +1,7 @@
 import numpy as np
 from .managers import *
 from .things.static_things import Apple
+from ..constants import colors
 
 
 #TODO: When drawing things on a grid or an image, do it in the order of id.
@@ -34,12 +35,17 @@ class Engine():
     def initiate_things(self):
         """Initiate and register things to thingsmanager"""
         #TODO: Just for testing. Change to final version later
-        self.The_apple = Apple((150,150))
+        self.The_apple = Apple((150,150), self.size)
         self._TM.regist(self.The_apple)
         for color, idx in self._TM.all_color.items():
             self._image[idx[0],idx[1]] = color
-            print(color)
 
     def update(self, action):
         reward = self._CM.update(action)
-        #TODO: find updated things and update their image
+        last, updated = self._TM.updated_color
+        for _, idx in last.items():
+            self._image[idx[0],idx[1]] = colors.COLOR_BACKGROUND
+        for color, idx in updated.items():
+            self._image[idx[0],idx[1]] = color
+        self._TM.reset_updated()
+        return reward

@@ -9,7 +9,7 @@ class Apple(Base):
     Apple
     Red Circle shaped object
     """
-    def __init__(self, center, radius = DEFAULT_APPLE_RADIUS, shape=None):
+    def __init__(self, center, shape, radius = DEFAULT_APPLE_RADIUS):
         """
         center: Center coordiate of the apple
         radius: Radius of the apple (Default = 10)

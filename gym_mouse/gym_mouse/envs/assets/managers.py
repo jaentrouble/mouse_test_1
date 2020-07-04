@@ -45,6 +45,39 @@ class ThingsManager():
             all_dict[v.color] = v.indices
         return all_dict
 
+    @property
+    def updated_id(self) :
+        """Returns 
+        (Last{ID : (rr, cc)}, New{ID : (rr, cc)})
+        for updated things
+        """
+        updated_dict = {}
+        last_dict = {}
+        for k, v in self._id_dict.items():
+            if v.is_updated :
+                updated_dict[k] = v.indices
+                last_dict[k] = v.last_indices
+        return last_dict, updated_dict
+
+    @property
+    def updated_color(self):
+        """Returns 
+        (Last{(R,G,B) : (rr, cc)}, New{(R,G,B) : (rr, cc)})
+        for updated things
+        """
+        updated_dict = {}
+        last_dict = {}
+        for _, v in self._id_dict.items():
+            if v.is_updated :
+                updated_dict[v.color] = v.indices
+                last_dict[v.color] = v.last_indices
+        return last_dict, updated_dict
+
+    def reset_updated(self):
+        """Reset all is_updated to False""" # Reset at Engine, not CollisionManager
+        for _, v in self._id_dict.items():
+            v.reset_updated()
+
 class CollisionManager():
     """
     Manages all interactions and returns Reward for every actions

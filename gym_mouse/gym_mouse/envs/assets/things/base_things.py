@@ -39,6 +39,10 @@ class Base():
         self._rr, self._cc = indices
 
     @property
+    def last_indices(self):
+        return self._last_rr, self._last_cc
+
+    @property
     def color(self):
         """Get current color"""
         if self._color is None:
