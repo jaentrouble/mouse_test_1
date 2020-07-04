@@ -1,2 +1,0 @@
-import things.base_things
-import things.static_things

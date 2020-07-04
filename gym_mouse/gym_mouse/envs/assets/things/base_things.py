@@ -15,7 +15,11 @@ class Base():
     def __init__(self):
         self._rr = None
         self._cc = None
+        # For efficiency of drawing things, save last indices if changed
+        self._last_rr = None
+        self._last_cc = None
         self._color = None
+        self._is_updated = False
 
     @property
     def indices(self):
@@ -27,9 +31,11 @@ class Base():
     @indices.setter
     def indices(self, indices):
         """
-        Gets indices
+        Gets indices and saves last indices
         indices : (rr, cc)
         """
+        self._last_rr, self._last_cc = self._rr, self._cc
+        self._is_updated = True
         self._rr, self._cc = indices
 
     @property
@@ -50,3 +56,16 @@ class Base():
         color = (color < 0) * 0
         color = (color > 255) * 255
         self._color = color
+
+    @property
+    def is_updated(self):
+        """
+        Returns True if the indices have changed
+        """
+        return self._is_updated
+
+    def reset_updated(self):
+        """
+        Set is_updated to False
+        """
+        self._is_updated = False
