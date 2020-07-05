@@ -14,7 +14,11 @@ class Engine():
     Image is the RGB array
     Grid is the array that contains id number of all things
     """
-    def __init__(self, height, width) :
+    def __init__(self, height, width, rng) :
+        """
+        height, width : size of the screen
+        rng : np.RandomState object incase seeded
+        """
         # Don't confuse 'Viewer' and 'Engine'
         # Size of Engine should always be the same while running
         self._height = height
@@ -35,20 +39,24 @@ class Engine():
 
     def initiate_things(self):
         """Initiate and register things to thingsmanager"""
-        #TODO: Just for testing. Change to final version later
+        #TODO: Just for testing. Change to final version later (Randomize)
         self.The_apple = Apple((150,150), self.size)
         self.The_mouse = Mouse((300,300),3, self.size)
         self._TM.regist(self.The_apple)
-        self._TM.regist(self.The_mouse)
+        self._mouse_ID = self._TM.regist(self.The_mouse)
         for color, idx in self._TM.all_color:
             self._image[idx[0],idx[1]] = color
 
     def update(self, action):
-        reward = self._CM.update(action)
-        last, updated = self._TM.updated_color
-        for _, idx in last:
-            self._image[idx[0],idx[1]] = colors.COLOR_BACKGROUND
-        for color, idx in updated:
-            self._image[idx[0],idx[1]] = color
+        """
+        action : (Delta_center, Delta_theta)
+        """
+        #TODO: Implement done & observation
+        reward = self._CM.update(action, self._mouse_ID)
+        for color, updated_idx, last_idx in self._TM.updated_color:
+            self._image[last_idx[0],last_idx[1]] = colors.COLOR_BACKGROUND
+            self._image[updated_idx[0],updated_idx[1]] = color
         self._TM.reset_updated()
-        return reward
+        done = None
+        observation = None
+        return observation, reward, done
