@@ -41,8 +41,8 @@ class Engine():
         """Initiate and register things to thingsmanager"""
         #TODO: Just for testing. Change to final version later (Randomize)
         self.The_apple = Apple((150,150), self.size)
-        self.The_mouse = Mouse((300,300),3, self.size)
-        self._TM.regist(self.The_apple)
+        self.The_mouse = Mouse((180,180),3, self.size)
+        self._apple_ID = self._TM.regist(self.The_apple)
         self._mouse_ID = self._TM.regist(self.The_mouse)
         for color, idx in self._TM.all_color:
             self._image[idx[0],idx[1]] = color
@@ -52,11 +52,13 @@ class Engine():
         action : (Delta_center, Delta_theta)
         """
         #TODO: Implement done & observation
+        # Reset first, so that static things will not have problem when
+        # they are created at the edge.
+        self._TM.reset_updated()
         reward = self._CM.update(action, self._mouse_ID)
         for color, updated_idx, last_idx in self._TM.updated_color:
             self._image[last_idx[0],last_idx[1]] = colors.COLOR_BACKGROUND
             self._image[updated_idx[0],updated_idx[1]] = color
-        self._TM.reset_updated()
         done = None
         observation = None
         return observation, reward, done

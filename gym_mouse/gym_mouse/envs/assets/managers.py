@@ -1,4 +1,5 @@
 import numpy as np
+from .things.things_consts import ThingsType as tt
 
 # Managers to help engine
 # TODO: Make a mouse(or any moving things) and implement update of CollisionManager
@@ -9,6 +10,7 @@ class ThingsManager():
     """
     def __init__(self):
         # Empty space is considered id: 0
+        # Mouse 
         self._new_id = 1
         self._id_dict = {}   # {ID : Actual object}
 
@@ -69,7 +71,8 @@ class ThingsManager():
 
     @property
     def updated_color(self):
-        """Returns 
+        """
+        Returns 
         (New_zip((R,G,B) : (rr, cc)), Last_zip((R,G,B) : (rr, cc)))
         for updated things
         """
@@ -86,6 +89,13 @@ class ThingsManager():
         """Reset all is_updated to False""" # Reset at Engine, not CollisionManager
         for _, v in self._id_dict.items():
             v.reset_updated()
+    
+    def update(self):
+        """
+        Updates all things it has
+        """
+        for _, v in self._id_dict.items():
+            v.update()
 
 class CollisionManager():
     """
@@ -106,9 +116,11 @@ class CollisionManager():
         mouse_ID : ID of the agent thing(Mouse)
         """
         reward = None
-        # First, update all positions that needs to be changed
+        # First, update all things
         # i.e. Dynamic objects
+        # Mouse is special; we need to update it manually
         self._TM.id_(mouse_ID).update_delta(*action)
+        self._TM.update()
 
         # Second, put them on grid and check collisions & behaviours
         # TODO: Implement collision
@@ -121,6 +133,21 @@ class CollisionManager():
                 np.any(np.array(updated_idx) == 0):
                 self._TM.id_(ID).hit_wall()
                 updated_idx = self._TM.id_(ID).indices
+
+            # Check collision
+            coll_mask = self._grid[updated_idx[0],updated_idx[1]] != 0
+            if np.any(coll_mask):
+                # Get collided points' indices
+                coll_r = updated_idx[0][np.nonzero(coll_mask)]
+                coll_c = updated_idx[1][np.nonzero(coll_mask)]
+                coll_ID = self._grid[coll_r, coll_c]
+                checked_ID = []
+                for i in coll_ID:
+                    if not(i in checked_ID):
+                        checked_ID.append(i)
+                        self._TM.id_(i).collided(self._TM.id_(ID).t_type)
+                        self._TM.id_(ID).collided(self._TM.id_(i).t_type)
+
 
             self._grid[updated_idx[0], updated_idx[1]] = ID
         

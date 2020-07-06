@@ -2,6 +2,7 @@ from .base_things import Base
 from ...constants import colors, tools
 import numpy as np
 from skimage import draw
+from .things_consts import ThingsType as tt
 
 #TODO: Make a mouse
 #TODO: Make a parent class for dynamic things and make hit_wall etc. functions
@@ -27,6 +28,7 @@ class Mouse(Base):
         self._R = np.sqrt(self._half_height**2 + self._half_width**2)
         self.update_pos(center, theta)
         self.color = colors.COLOR_MOUSE
+        self._t_type = tt.Mouse
 
     def update_pos(self, center, theta):
         self._center = center
@@ -71,3 +73,6 @@ class Mouse(Base):
     def eye(self):
         """(left_eye_pos, right_eye_pos, theta)"""
         return (self._lt_f.copy(), self._rt_f.copy(), self._theta)
+
+    def collided(self, t_type):
+        print('mouse collided')

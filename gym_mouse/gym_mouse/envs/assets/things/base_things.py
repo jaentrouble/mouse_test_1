@@ -20,6 +20,12 @@ class Base():
         # Color can be a tuple or an array of color per pixel
         self._color = None
         self._is_updated = False
+        # Type of this thing
+        self._t_type = None
+
+    @property
+    def t_type(self):
+        return self._t_type
 
     @property
     def indices(self):
@@ -70,3 +76,25 @@ class Base():
         Set is_updated to False
         """
         self._is_updated = False
+
+    def hit_wall(self):
+        """
+        Override this method if needed.
+        """
+        pass
+
+    def update(self):
+        """
+        Override this method if needed.
+        This will be called every time.
+        Dynamic objects should use this method to move themselves.
+        """
+        pass
+
+    def collided(self, t_type):
+        """
+        Define actions to do when collided with 'type' thing
+        This may be called TWICE if two dynamic objects collide
+        """
+        #TODO: Implement things-constant object about type
+        pass
