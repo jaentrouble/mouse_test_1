@@ -99,6 +99,5 @@ class Mouse(Base):
 
     def collided(self, t_type):
         if t_type == tt.Apple:
-            #TODO: fix after test
-            # self._reward += 1
             self._dead = True
+            self._reward += 1

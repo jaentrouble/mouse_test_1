@@ -124,7 +124,6 @@ class CollisionManager():
         self._TM.update()
 
         # Second, put them on grid and check collisions & behaviours
-        # TODO: Implement collision
         for ID, updated_idx, last_idx in self._TM.updated_id:
             self._grid[last_idx[0], last_idx[1]] = 0
 

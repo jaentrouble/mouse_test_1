@@ -17,7 +17,6 @@ class Engine():
     def __init__(self, height, width) :
         """
         height, width : size of the screen
-        rng : np.RandomState object incase seeded
         """
         # Don't confuse 'Viewer' and 'Engine'
         # Size of Engine should always be the same while running
@@ -49,6 +48,7 @@ class Engine():
         self._apple_ID = self._TM.regist(self.The_apple)
         for color, idx in self._TM.all_color:
             self._image[idx[0],idx[1]] = color
+        #TODO: make observation cache
 
     def update(self, action):
         """
@@ -65,3 +65,40 @@ class Engine():
             self._image[updated_idx[0],updated_idx[1]] = color
         observation = None
         return observation, reward, done
+
+    def observe(self):
+        """
+        return lt_obs, rt_obs
+        """
+        lt_eye, rt_eye, theta, beta = self.The_mouse.eye
+        # Offset
+        lt_eye = np.round(lt_eye + 1.5* np.array([np.cos(theta+beta),
+                                                np.sin(theta+beta)]))
+        rt_eye = np.round(rt_eye + 1.5* np.array([np.cos(theta-beta),
+                                                np.sin(theta-beta)]))
+        ray = np.stack((np.broadcast_to(lt_eye,(2,100)),
+                        np.broadcast_to(rt_eye,(2,100))), axis=0)
+        lt_angles = np.linspace(theta+beta+np.pi/2, theta+beta-np.pi/2,num=100)
+        rt_angles = np.linspace(theta-beta-np.pi/2, theta-beta+np.pi/2,num=100)
+
+        delta_vec = np.stack((np.cos(lt_angles),np.sin(lt_angles),
+                              np.cos(rt_angles),np.sin(rt_angles)), axis=0)
+        delta_vec.resize(2,2,100)
+        
+        while np.any(delta_vec) :
+            np.round(np.add(ray,delta_vec,out=ray),out=ray)
+            # Hits end of image
+            lt_mask = np.nonzero(ray[0,0]==0 or ray[0,0]==self.size[0]\
+                                or ray[0,1]==0 or ray[0,1]==self.size[1]\
+            # or anything that is not background color
+            or np.any(self._image[ray[0,0],ray[0,1]]!=colors.COLOR_BACKGROUND,
+                      axis=-1))
+            rt_mask = np.nonzero(ray[1,0]==0 or ray[1,0]==self.size[0]\
+                                or ray[1,1]==0 or ray[1,1]==self.size[1]\
+            or np.any(self._image[ray[1,0],ray[1,1]]!=colors.COLOR_BACKGROUND,
+                      axis=-1))
+            delta_vec[0,:,lt_mask] = 0
+            delta_vec[1,:,rt_mask] = 0
+        lt_obs = self._image[ray[0,0],ray[0,1]]
+        rt_obs = self._image[ray[1,0],ray[1,1]]
+        return lt_obs, rt_obs
