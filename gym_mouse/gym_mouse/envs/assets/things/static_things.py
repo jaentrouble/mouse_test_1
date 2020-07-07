@@ -25,8 +25,6 @@ class Apple(Base):
         self.is_eaten = False
     
     def collided(self, t_type):
-        #TODO: Finish collision
-        print('apple collided')
         if t_type == tt.Mouse:
             self.is_eaten = True
 

@@ -2,7 +2,6 @@ import numpy as np
 from .things.things_consts import ThingsType as tt
 
 # Managers to help engine
-# TODO: Make a mouse(or any moving things) and implement update of CollisionManager
 
 class ThingsManager():
     """
@@ -128,9 +127,9 @@ class CollisionManager():
             self._grid[last_idx[0], last_idx[1]] = 0
 
             # Hit wall
-            if np.any(updated_idx[0] == self._size[0]) or\
-                np.any(updated_idx[1] == self._size[1]) or\
-                np.any(np.array(updated_idx) == 0):
+            if np.any(updated_idx[0] >= self._size[0]) or\
+                np.any(updated_idx[1] >= self._size[1]) or\
+                np.any(np.array(updated_idx) <= 0):
                 self._TM.id_(ID).hit_wall()
                 updated_idx = self._TM.id_(ID).indices
 

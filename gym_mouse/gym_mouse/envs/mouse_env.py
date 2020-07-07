@@ -7,16 +7,15 @@ import numpy as np
 
 class MouseEnv(gym.Env) :
     metadata = {
-        'render.modes' : ['human']
+        'render.modes' : ['human','rgb']
     }
     def __init__(self):
         #Turn left 45°, Move forward, Turn right 45°
         self.action_space = Discrete(3)
         self._done = False
         self.viewer = None
+        self.engine = None
         self.seed()
-        #TODO: Check screen size later
-        self.engine = Engine(720,720)
 
         # 3 Continuous Inputs from both eyes
         self.observation_space = Dict(
@@ -26,6 +25,7 @@ class MouseEnv(gym.Env) :
         
 
     def step(self, action):
+        assert not (self.engine is None), 'Reset first before starting env'
         if self._done :
             print('The game is already done. Continuing may cause unexpected'\
                 ' behaviors')
@@ -46,19 +46,20 @@ class MouseEnv(gym.Env) :
         """
         Reset the environment and return initial observation
         """
-        initial_observation = None
         self._done = False
-        self.engine = Engine(720,720)
-        #TODO: Add initial_observation
+        self.engine = self._new_engine()
+        initial_observation = self.engine.initial_observation()
         return initial_observation
 
     def render(self, mode='human'):
-        
+        assert not (self.engine is None), 'Reset first before starting env'
         if 'human' in mode :
             from gym.envs.classic_control import rendering
             if self.viewer == None:
                 self.viewer = rendering.SimpleImageViewer()
-        self.viewer.imshow(self.engine.image)
+            self.viewer.imshow(self.engine.image)
+        elif 'rgb' in mode :
+            return self.engine.image
 
     def seed(self, seed=None):
         np_random, seed = seeding.np_random(seed)
@@ -66,7 +67,12 @@ class MouseEnv(gym.Env) :
         self.action_space.seed(seed)
 
     def close(self):
-        pass
+        if self.viewer:
+            self.viewer.close()
+            self.viewer = None
+
+    def _new_engine(self):
+        return Engine(720,720)
 
 # Testing
 if __name__ == '__main__' :

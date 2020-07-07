@@ -5,9 +5,6 @@ from skimage import draw
 from .things_consts import ThingsType as tt
 from .things_consts import DefaultSize as ds
 
-#TODO: Make a mouse
-#TODO: Make a parent class for dynamic things and make hit_wall etc. functions
-#       to be shared by all dynamic things
 
 class Mouse(Base):
     """
@@ -99,5 +96,4 @@ class Mouse(Base):
 
     def collided(self, t_type):
         if t_type == tt.Apple:
-            self._dead = True
             self._reward += 1
