@@ -96,5 +96,4 @@ class Base():
         Define actions to do when collided with 'type' thing
         This may be called TWICE if two dynamic objects collide
         """
-        #TODO: Implement things-constant object about type
         pass

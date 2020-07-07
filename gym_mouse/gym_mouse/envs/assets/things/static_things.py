@@ -1,6 +1,6 @@
 from .base_things import Base
-from ...constants import colors
-from .things_consts import *
+from ...constants import colors, rng
+from .things_consts import DefaultSize as ds
 from .things_consts import ThingsType as tt
 from skimage import draw
 import numpy as np
@@ -9,8 +9,9 @@ class Apple(Base):
     """
     Apple
     Red Circle shaped object
+    Will be generated at a random place when eaten
     """
-    def __init__(self, center, shape, radius = DEFAULT_APPLE_RADIUS):
+    def __init__(self, center, shape, radius = ds.Apple_radius):
         """
         center: Center coordiate of the apple
         radius: Radius of the apple (Default = 10)
@@ -29,5 +30,13 @@ class Apple(Base):
         if t_type == tt.Mouse:
             self.is_eaten = True
 
-    def reset(self, center, radius = DEFAULT_APPLE_RADIUS):
+    def reset(self, center, radius = ds.Apple_radius):
         self.indices = draw.disk(center, radius, shape=self._shape)
+        self.is_eaten = False
+
+    def update(self):
+        if self.is_eaten:
+            self.reset(
+                (rng.np_random.randint(0, self._shape[0]),
+                 rng.np_random.randint(0, self._shape[1])),
+            )

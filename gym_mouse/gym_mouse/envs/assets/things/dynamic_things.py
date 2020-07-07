@@ -3,6 +3,7 @@ from ...constants import colors, tools
 import numpy as np
 from skimage import draw
 from .things_consts import ThingsType as tt
+from .things_consts import DefaultSize as ds
 
 #TODO: Make a mouse
 #TODO: Make a parent class for dynamic things and make hit_wall etc. functions
@@ -20,15 +21,20 @@ class Mouse(Base):
         shape : Maximum size of the grid
         """
         super().__init__()
-        self._half_width = 10
-        self._half_height = 20
+        self._half_width = ds.Mouse_half_width
+        self._half_height = ds.Mouse_half_height
         self._nose_len = 5
         self._shape = shape
+        # Angle between axis of the body and the 'eyes'
         self._alpha = np.tanh(self._half_width/self._half_height)
+        # Angle between axis of the body and eye-to-nose
+        self._beta = np.tanh(self._nose_len/self._half_width)
         self._R = np.sqrt(self._half_height**2 + self._half_width**2)
         self.update_pos(center, theta)
         self.color = colors.COLOR_MOUSE
         self._t_type = tt.Mouse
+        self._reward = 0
+        self._dead = False
 
     def update_pos(self, center, theta):
         self._center = center
@@ -71,8 +77,28 @@ class Mouse(Base):
 
     @property
     def eye(self):
-        """(left_eye_pos, right_eye_pos, theta)"""
-        return (self._lt_f.copy(), self._rt_f.copy(), self._theta)
+        """(left_eye_pos, right_eye_pos, theta, beta)"""
+        return (self._lt_f.copy(), self._rt_f.copy(), self._theta, self._beta)
+
+    @property
+    def reward(self):
+        """
+        return collected rewards
+        """
+        return self._reward
+
+    def is_dead(self):
+        return self._dead
+
+    def reset_reward(self):
+        """
+        Reset reward to 0
+        Call this after 
+        """
+        self._reward = 0
 
     def collided(self, t_type):
-        print('mouse collided')
+        if t_type == tt.Apple:
+            #TODO: fix after test
+            # self._reward += 1
+            self._dead = True

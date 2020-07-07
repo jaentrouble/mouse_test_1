@@ -2,7 +2,7 @@ import numpy as np
 from .managers import *
 from .things.static_things import Apple
 from .things.dynamic_things import Mouse
-from ..constants import colors
+from ..constants import colors, rng
 
 
 #TODO: When drawing things on a grid or an image, do it in the order of id.
@@ -14,7 +14,7 @@ class Engine():
     Image is the RGB array
     Grid is the array that contains id number of all things
     """
-    def __init__(self, height, width, rng) :
+    def __init__(self, height, width) :
         """
         height, width : size of the screen
         rng : np.RandomState object incase seeded
@@ -38,12 +38,15 @@ class Engine():
         return self._image.copy()
 
     def initiate_things(self):
-        """Initiate and register things to thingsmanager"""
+        """
+        Initiate and register things to thingsmanager
+        Recommand to register mouse very first.
+        """
         #TODO: Just for testing. Change to final version later (Randomize)
         self.The_apple = Apple((150,150), self.size)
         self.The_mouse = Mouse((180,180),3, self.size)
-        self._apple_ID = self._TM.regist(self.The_apple)
         self._mouse_ID = self._TM.regist(self.The_mouse)
+        self._apple_ID = self._TM.regist(self.The_apple)
         for color, idx in self._TM.all_color:
             self._image[idx[0],idx[1]] = color
 
@@ -55,10 +58,10 @@ class Engine():
         # Reset first, so that static things will not have problem when
         # they are created at the edge.
         self._TM.reset_updated()
-        reward = self._CM.update(action, self._mouse_ID)
+        reward, done = self._CM.update(action, self._mouse_ID)
+        reward -= 0.1
         for color, updated_idx, last_idx in self._TM.updated_color:
             self._image[last_idx[0],last_idx[1]] = colors.COLOR_BACKGROUND
             self._image[updated_idx[0],updated_idx[1]] = color
-        done = None
         observation = None
         return observation, reward, done

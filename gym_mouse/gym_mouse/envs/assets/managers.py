@@ -10,7 +10,6 @@ class ThingsManager():
     """
     def __init__(self):
         # Empty space is considered id: 0
-        # Mouse 
         self._new_id = 1
         self._id_dict = {}   # {ID : Actual object}
 
@@ -116,10 +115,12 @@ class CollisionManager():
         mouse_ID : ID of the agent thing(Mouse)
         """
         reward = None
+        done = False
         # First, update all things
         # i.e. Dynamic objects
         # Mouse is special; we need to update it manually
-        self._TM.id_(mouse_ID).update_delta(*action)
+        mouse = self._TM.id_(mouse_ID)
+        mouse.update_delta(*action)
         self._TM.update()
 
         # Second, put them on grid and check collisions & behaviours
@@ -150,6 +151,10 @@ class CollisionManager():
 
 
             self._grid[updated_idx[0], updated_idx[1]] = ID
-        
+            reward = mouse.reward
+            mouse.reset_reward()
+            if mouse.is_dead():
+                reward = -1
+                done = True
 
-        return reward
+        return reward, done
