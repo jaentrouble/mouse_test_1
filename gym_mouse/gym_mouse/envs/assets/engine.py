@@ -2,13 +2,14 @@ import numpy as np
 from .managers import *
 from .things.static_things import Apple
 from .things.dynamic_things import Mouse
+from .things.things_consts import DefaultSize as ds
 from ..constants import colors, rng
 from ..constants import rewards as R
 
 RAY_NUM = 100
 CACHE_NUM = 3
 
-#TODO: When drawing things on a grid or an image, do it in the order of id.
+#**** When drawing things on a grid or an image, do it in the order of id.
 #       This is to get consistent across engine and collision manager.
 
 class Engine():
@@ -44,19 +45,23 @@ class Engine():
         Returns current observation
         Use this for initial observation
         """
-        return {'Right':np.array(self._obs_rt_cache,dtype=np.uint8),
-                'Left':np.array(self._obs_lt_cache,dtype=np.uint8)}
-
+        return {'Right':np.array(self._obs_rt_cache,
+                        dtype=np.uint8).swapaxes(0,1),
+                'Left':np.array(self._obs_lt_cache,
+                        dtype=np.uint8).swapaxes(0,1)}
     def initiate_things(self):
         """
         Initiate and register things to thingsmanager
         Recommand to register mouse very first.
         """
         print(rng.np_random.randint(0,100))
+        min_r, min_c = ds.Mouse_max_len, ds.Mouse_max_len
+        max_r = self.size[0] - ds.Mouse_max_len
+        max_c = self.size[1] - ds.Mouse_max_len
         rand_a_pos = (rng.np_random.randint(0,self.size[0]),
                       rng.np_random.randint(0,self.size[1]))
-        rand_m_pos = (rng.np_random.randint(0,self.size[0]),
-                      rng.np_random.randint(0,self.size[1]))
+        rand_m_pos = (rng.np_random.randint(min_r,max_r),
+                      rng.np_random.randint(min_c,max_c))
         self.The_apple = Apple(rand_a_pos, self.size)
         self.The_mouse = Mouse(rand_m_pos,4, self.size)
         self._a_m_dist = np.sqrt(np.sum(np.subtract(rand_a_pos,rand_m_pos)**2))
@@ -74,8 +79,12 @@ class Engine():
         """
         # Reset first, so that static things will not have problem when
         # they are created at the edge.
+        # To keep track of scores(How many apples did it manage to get)
+        info = {'ate_apple':False}
         self._TM.reset_updated()
-        mouse_reward, done = self._CM.update(action, self._mouse_ID)
+        mouse_reward, done, ate_apple = self._CM.update(action, self._mouse_ID)
+        if ate_apple:
+            info['ate_apple']=True
         reward = self.reward_calc(mouse_reward)
         for color, updated_idx, last_idx in self._TM.updated_color:
             self._image[last_idx[0],last_idx[1]] = colors.COLOR_BACKGROUND
@@ -89,7 +98,7 @@ class Engine():
                             dtype=np.uint8).swapaxes(0,1),
                         'Left':np.array(self._obs_lt_cache,
                             dtype=np.uint8).swapaxes(0,1)}
-        return observation, reward, done
+        return observation, reward, done, info
 
     def observe(self):
         """
@@ -113,7 +122,9 @@ class Engine():
         
         while np.any(delta_vec) :
             # Floating point ray that keeps track of rays
-            fp_ray = np.add(fp_ray,delta_vec, out=fp_ray)
+            fp_ray = np.add(fp_ray,delta_vec,out=fp_ray)
+            np.clip(fp_ray[:,0,:],0,self.size[0]-1,out=fp_ray[:,0,:])
+            np.clip(fp_ray[:,1,:],0,self.size[1]-1,out=fp_ray[:,1,:])
             # The rounded ray to use as indices
             ray[:] = np.round(fp_ray)
             lt_mask = np.nonzero(np.logical_or.reduce((
@@ -150,7 +161,6 @@ class Engine():
                                               self.The_mouse.pos)**2))
         # If mouse gets farther away from the apple, punish
         if new_dist > self._a_m_dist:
-            #TODO: Define all the rewards in a single file?
             reward += R.get_away_from_apple
         elif new_dist < self._a_m_dist:
             reward += R.get_close_to_apple

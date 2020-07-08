@@ -33,9 +33,10 @@ class Mouse(Base):
         self._t_type = tt.Mouse
         self._reward = 0
         self._dead = False
+        self._ate_apple = False
 
     def update_pos(self, center, theta):
-        self._center = center
+        self._center = np.array(center)
         self._theta = theta
         self._nose_pos = center + \
                         (self._half_height + self._nose_len) * \
@@ -92,6 +93,9 @@ class Mouse(Base):
         """
         return self._center.copy()
 
+    def ate_apple(self):
+        return self._ate_apple
+
     def is_dead(self):
         return self._dead
 
@@ -101,7 +105,9 @@ class Mouse(Base):
         Call this after 
         """
         self._reward = 0
+        self._ate_apple = False
 
     def collided(self, t_type):
         if t_type == tt.Apple:
             self._reward += R.eat_apple
+            self._ate_apple = True

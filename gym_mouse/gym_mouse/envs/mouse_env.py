@@ -37,7 +37,7 @@ class MouseEnv(gym.Env) :
             trans_action = ((10,0),0)
         elif action == 2:
             trans_action = ((0,0),-np.pi/4)
-        observation, reward, done = self.engine.update(trans_action)
+        observation, reward, done, info = self.engine.update(trans_action)
         if done:
             self._done = True
         
@@ -46,7 +46,6 @@ class MouseEnv(gym.Env) :
         if self.cur_step >= 1000:
             self._done = True
             done = True
-        info = None
 
         return observation, reward, done, info
 

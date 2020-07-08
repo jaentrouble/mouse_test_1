@@ -149,9 +149,10 @@ class CollisionManager():
 
             self._grid[updated_idx[0], updated_idx[1]] = ID
             reward = mouse.reward
+            ate_apple = mouse.ate_apple()
             mouse.reset_reward()
             if mouse.is_dead():
                 reward = -1
                 done = True
 
-        return reward, done
+        return reward, done, ate_apple
