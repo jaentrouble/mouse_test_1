@@ -98,7 +98,6 @@ class ThingsManager():
 class CollisionManager():
     """
     Manages all interactions and returns Reward for every actions
-    #TODO: Implement CollisionManager
     """
     def __init__(self, size, tmanager:ThingsManager):
         self._size = size

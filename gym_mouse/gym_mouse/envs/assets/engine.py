@@ -3,6 +3,7 @@ from .managers import *
 from .things.static_things import Apple
 from .things.dynamic_things import Mouse
 from ..constants import colors, rng
+from ..constants import rewards as R
 
 RAY_NUM = 100
 CACHE_NUM = 3
@@ -58,6 +59,7 @@ class Engine():
                       rng.np_random.randint(0,self.size[1]))
         self.The_apple = Apple(rand_a_pos, self.size)
         self.The_mouse = Mouse(rand_m_pos,4, self.size)
+        self._a_m_dist = np.sqrt(np.sum(np.subtract(rand_a_pos,rand_m_pos)**2))
         self._mouse_ID = self._TM.regist(self.The_mouse)
         self._apple_ID = self._TM.regist(self.The_apple)
         for color, idx in self._TM.all_color:
@@ -73,8 +75,8 @@ class Engine():
         # Reset first, so that static things will not have problem when
         # they are created at the edge.
         self._TM.reset_updated()
-        reward, done = self._CM.update(action, self._mouse_ID)
-        reward -= 0.1
+        mouse_reward, done = self._CM.update(action, self._mouse_ID)
+        reward = self.reward_calc(mouse_reward)
         for color, updated_idx, last_idx in self._TM.updated_color:
             self._image[last_idx[0],last_idx[1]] = colors.COLOR_BACKGROUND
             self._image[updated_idx[0],updated_idx[1]] = color
@@ -83,8 +85,10 @@ class Engine():
         self._obs_rt_cache.pop(0)
         self._obs_lt_cache.append(lt_obs)
         self._obs_rt_cache.append(rt_obs)
-        observation = {'Right':np.array(self._obs_rt_cache,dtype=np.uint8),
-                        'Left':np.array(self._obs_lt_cache,dtype=np.uint8)}
+        observation = {'Right':np.array(self._obs_rt_cache,
+                            dtype=np.uint8).swapaxes(0,1),
+                        'Left':np.array(self._obs_lt_cache,
+                            dtype=np.uint8).swapaxes(0,1)}
         return observation, reward, done
 
     def observe(self):
@@ -97,8 +101,9 @@ class Engine():
                                                 np.sin(theta+beta)]))[:,np.newaxis]
         rt_eye = np.round(rt_eye + 1.5* np.array([np.cos(theta-beta),
                                                 np.sin(theta-beta)]))[:,np.newaxis]
-        ray = np.stack((np.broadcast_to(lt_eye,(2,RAY_NUM)),
+        fp_ray = np.stack((np.broadcast_to(lt_eye,(2,RAY_NUM)),
                         np.broadcast_to(rt_eye,(2,RAY_NUM))), axis=0)
+        ray = np.empty_like(fp_ray, dtype=np.int)
         lt_angles = np.linspace(theta+beta+np.pi/2, theta+beta-np.pi/2,num=RAY_NUM)
         rt_angles = np.linspace(theta-beta-np.pi/2, theta-beta+np.pi/2,num=RAY_NUM)
 
@@ -107,7 +112,10 @@ class Engine():
         delta_vec.resize(2,2,RAY_NUM)
         
         while np.any(delta_vec) :
-            ray = np.round(np.add(ray,delta_vec)).astype(np.int)
+            # Floating point ray that keeps track of rays
+            fp_ray = np.add(fp_ray,delta_vec, out=fp_ray)
+            # The rounded ray to use as indices
+            ray[:] = np.round(fp_ray)
             lt_mask = np.nonzero(np.logical_or.reduce((
                 # Hits end of image
                 ray[0,0]<=0,
@@ -131,3 +139,21 @@ class Engine():
         lt_obs = self._image[ray[0,0],ray[0,1]]
         rt_obs = self._image[ray[1,0],ray[1,1]]
         return lt_obs, rt_obs
+    
+    def reward_calc(self, mouse_reward):
+        """
+        Reward calculation function
+        To add something other than mouse's reward
+        """
+        reward = mouse_reward
+        new_dist = np.sqrt(np.sum(np.subtract(self.The_apple.pos,
+                                              self.The_mouse.pos)**2))
+        # If mouse gets farther away from the apple, punish
+        if new_dist > self._a_m_dist:
+            #TODO: Define all the rewards in a single file?
+            reward += R.get_away_from_apple
+        elif new_dist < self._a_m_dist:
+            reward += R.get_close_to_apple
+        self._a_m_dist = new_dist
+        return reward
+        

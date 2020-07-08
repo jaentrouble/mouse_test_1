@@ -1,5 +1,6 @@
 from .base_things import Base
 from ...constants import colors, tools
+from ...constants import rewards as R
 import numpy as np
 from skimage import draw
 from .things_consts import ThingsType as tt
@@ -84,6 +85,13 @@ class Mouse(Base):
         """
         return self._reward
 
+    @property
+    def pos(self):
+        """
+        return center position
+        """
+        return self._center.copy()
+
     def is_dead(self):
         return self._dead
 
@@ -96,4 +104,4 @@ class Mouse(Base):
 
     def collided(self, t_type):
         if t_type == tt.Apple:
-            self._reward += 1
+            self._reward += R.eat_apple

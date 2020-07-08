@@ -15,6 +15,8 @@ class MouseEnv(gym.Env) :
         self._done = False
         self.viewer = None
         self.engine = None
+        self.max_step = 1000
+        self.cur_step = 0
         self.seed()
 
         # 3 Continuous Inputs from both eyes
@@ -38,6 +40,12 @@ class MouseEnv(gym.Env) :
         observation, reward, done = self.engine.update(trans_action)
         if done:
             self._done = True
+        
+        #Check if reached max_step
+        self.cur_step += 1
+        if self.cur_step >= 1000:
+            self._done = True
+            done = True
         info = None
 
         return observation, reward, done, info
@@ -56,7 +64,7 @@ class MouseEnv(gym.Env) :
         if 'human' in mode :
             from gym.envs.classic_control import rendering
             if self.viewer == None:
-                self.viewer = rendering.SimpleImageViewer()
+                self.viewer = rendering.SimpleImageViewer(maxwidth=720)
             self.viewer.imshow(self.engine.image)
         elif 'rgb' in mode :
             return self.engine.image
