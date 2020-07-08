@@ -1,5 +1,5 @@
 Buffer_size = 100000
-Learn_start = 10000
+Learn_start = 500
 Batch_size =32
 Target_update = 20000
 epsilon = 0.1

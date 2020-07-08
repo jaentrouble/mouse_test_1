@@ -54,7 +54,6 @@ class Engine():
         Initiate and register things to thingsmanager
         Recommand to register mouse very first.
         """
-        print(rng.np_random.randint(0,100))
         min_r, min_c = ds.Mouse_max_len, ds.Mouse_max_len
         max_r = self.size[0] - ds.Mouse_max_len
         max_c = self.size[1] - ds.Mouse_max_len
