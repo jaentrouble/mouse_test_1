@@ -203,23 +203,49 @@ class Player():
         self.model.save(self.model_dir)
         self.save_count += 1
 
-    def evaluate(self, env):
+    def evaluate(self, env, video_type):
+        print('Evaluating...')
         done = False
-        video_dir = path.join(self.model_dir, 'eval.avi')
+        video_dir = path.join(self.model_dir, 'eval.{}'.format(video_type))
+        eye_dir = path.join(self.model_dir, 'eval_eye.{}'.format(video_type))
         score_dir = path.join(self.model_dir, 'score.txt')
-        fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-        out = cv2.VideoWriter(video_dir, fourcc, 5, env.image_size)
+        if 'avi' in video_type :
+            fcc = 'DIVX'
+        elif 'mp4' in video_type:
+            fcc = 'X264'
+        else:
+            raise TypeError('Wrong videotype')
+        fourcc = cv2.VideoWriter_fourcc(*fcc)
+        # Be careful : cv2 order of image size is (width, height)
+        eye_out = cv2.VideoWriter(eye_dir, fourcc, 10, (205*5,50))
+        out = cv2.VideoWriter(video_dir, fourcc, 10, env.image_size)
+        eye_bar = np.ones((5,3),dtype=np.uint8)*np.array([255,255,0],dtype=np.uint8)
         o = env.reset()
         score = 0
+        loop = 0
         while not done :
+            loop += 1
+            if not loop % 100:
+                print('Eval : {}step passed'.format(loop))
             a = self.act(o)
             o,r,done,i = env.step(a)
             if i['ate_apple']:
                 score += 1
+            #eye recording
+            rt_eye = np.flip(o['Right'][:,-1,:],axis=0)
+            lt_eye = o['Left'][:,-1,:]
+            eye_img = np.concatenate((lt_eye,eye_bar,rt_eye))
+            eye_img = np.broadcast_to(eye_img.reshape((1,205,1,3)),(50,205,5,3))
+            eye_img = eye_img.reshape(50,205*5,3)
+            eye_out.write(np.flip(eye_img, axis=-1))
+            # This will turn image 90 degrees, but it does not make any difference,
+            # so keep it this way to save computations
             out.write(np.flip(env.render('rgb'), axis=-1))
-        out.release
+        out.release()
+        eye_out.release()
         with open(score_dir, 'w') as f:
             f.write(str(score))
+        print('Eval finished')
         return score
 
 if __name__=='__main__':
