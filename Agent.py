@@ -211,7 +211,7 @@ class Player():
         score_dir = path.join(self.model_dir, 'score.txt')
         if 'avi' in video_type :
             fcc = 'DIVX'
-        elif 'mp4' in video_type:
+        elif 'mkv' in video_type:
             fcc = 'H264'
         else:
             raise TypeError('Wrong videotype')
