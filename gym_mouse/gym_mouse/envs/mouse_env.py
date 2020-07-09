@@ -54,6 +54,7 @@ class MouseEnv(gym.Env) :
         Reset the environment and return initial observation
         """
         self._done = False
+        self.cur_step = 0
         self.engine = self._new_engine()
         initial_observation = self.engine.initial_observation()
         return initial_observation
