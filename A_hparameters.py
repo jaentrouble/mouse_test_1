@@ -8,4 +8,4 @@ epsilon_nstep = 500000
 Q_discount = 0.99
 Train_epoch = 1
 
-Model_save = 200000
+Model_save = 100000
