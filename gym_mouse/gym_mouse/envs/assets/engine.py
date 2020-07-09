@@ -62,7 +62,7 @@ class Engine():
         rand_m_pos = (rng.np_random.randint(min_r,max_r),
                       rng.np_random.randint(min_c,max_c))
         self.The_apple = Apple(rand_a_pos, self.size)
-        self.The_mouse = Mouse(rand_m_pos,4, self.size)
+        self.The_mouse = Mouse(rand_m_pos,rng.np_random.rand()*np.pi, self.size)
         self._a_m_dist = np.sqrt(np.sum(np.subtract(rand_a_pos,rand_m_pos)**2))
         self._mouse_ID = self._TM.regist(self.The_mouse)
         self._apple_ID = self._TM.regist(self.The_apple)
