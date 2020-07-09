@@ -26,7 +26,9 @@ player = Player(env.observation_space, env.action_space)
 if not args.vm :
     env.render()
 for step in trange(2000000):
-    if not step % hp.Model_save:
+    #TODO: implement load_model
+    # Save just before closing (24h)
+    if not step % hp.Model_save or time.time()-st > 23*60*60:
         player.save_model()
         score = player.evaluate(gym.make('mouse-v0'), vid_type)
         print('step {0} eval_score:{1}'.format(step,score))
