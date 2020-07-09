@@ -115,8 +115,9 @@ class Engine():
         lt_angles = np.linspace(theta+beta+np.pi/2, theta+beta-np.pi/2,num=RAY_NUM)
         rt_angles = np.linspace(theta-beta-np.pi/2, theta-beta+np.pi/2,num=RAY_NUM)
 
+        #TODO: check if it works faster significantly
         delta_vec = np.stack((np.cos(lt_angles),np.sin(lt_angles),
-                              np.cos(rt_angles),np.sin(rt_angles)), axis=0)
+                              np.cos(rt_angles),np.sin(rt_angles)), axis=0)*2
         delta_vec.resize(2,2,RAY_NUM)
         
         while np.any(delta_vec) :

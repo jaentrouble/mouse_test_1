@@ -73,6 +73,7 @@ class Mouse(Base):
         Will change back to last center/theta
         """
         self.update_pos(self._last_center, self._last_theta)
+        print('hit wall')
 
     @property
     def eye(self):
