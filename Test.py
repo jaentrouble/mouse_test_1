@@ -23,7 +23,11 @@ o = env.reset()
 player = Player(env.observation_space, env.action_space)
 if args.vm :
     env.render()
-for _ in trange(50000):
+for step in trange(2000000):
+    if not step % hp.Model_save:
+        player.save_model()
+        score = player.evaluate(gym.make('mouse-v0'))
+        print('step {0} eval_score:{1}'.format(step,score))
     action = player.act(o)
     o,r,d,i = env.step(action)
     if args.vm :

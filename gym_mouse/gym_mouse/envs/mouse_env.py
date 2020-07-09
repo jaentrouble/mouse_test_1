@@ -17,6 +17,7 @@ class MouseEnv(gym.Env) :
         self.engine = None
         self.max_step = 1000
         self.cur_step = 0
+        self.image_size = (720,720)
         self.seed()
 
         # 3 Continuous Inputs from both eyes
@@ -80,7 +81,7 @@ class MouseEnv(gym.Env) :
             self.viewer = None
 
     def _new_engine(self):
-        return Engine(720,720)
+        return Engine(*self.image_size)
 
 # Testing
 if __name__ == '__main__' :

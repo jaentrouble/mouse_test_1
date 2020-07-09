@@ -6,6 +6,7 @@ import A_hparameters as hp
 from datetime import datetime
 from os import path, makedirs
 import random
+import cv2
 # TODO: Delete when finished
 from gym.spaces import Dict, Discrete, Box
 import numpy as np
@@ -134,12 +135,13 @@ class Player():
             before_state['Left']
         self.bef_state = before_state
         self.q = self.model(self.bef_state, training=False).numpy()
-        tf.summary.scalar('maxQ', tf.math.reduce_max(self.q), self.total_steps)
         self.action = self.choose_action(self.q)
         return self.action
 
     def step(self, after_state, reward, done, info):
         after_state = self.pre_processing(after_state)
+        # Record here, so that it won't record when evaluating
+        tf.summary.scalar('maxQ', tf.math.reduce_max(self.q), self.total_steps)
         if info['ate_apple']:
             self.score += 1
         self.cumreward += reward
@@ -148,7 +150,7 @@ class Player():
             self.rounds += 1
             tf.summary.scalar('Score', self.score, self.rounds)
             tf.summary.scalar('Reward', self.cumreward, self.rounds)
-            print('{0} round({1} steps) || Score: {2} | Reward: {2:.1f}'.format(
+            print('{0} round({1} steps) || Score: {2} | Reward: {3:.1f}'.format(
                 self.rounds, self.current_steps, self.score, self.cumreward
             ))
             self.score = 0
@@ -197,10 +199,28 @@ class Player():
     def save_model(self):
         if not path.exists(self.save_dir):
             makedirs(self.save_dir)
-        model_dir = path.join(self.save_dir, self.save_count)
-        self.model.save(model_dir)
+        self.model_dir = path.join(self.save_dir, str(self.save_count))
+        self.model.save(self.model_dir)
         self.save_count += 1
 
+    def evaluate(self, env):
+        done = False
+        video_dir = path.join(self.model_dir, 'eval.avi')
+        score_dir = path.join(self.model_dir, 'score.txt')
+        fourcc = cv2.VideoWriter_fourcc(*'DIVX')
+        out = cv2.VideoWriter(video_dir, fourcc, 5, env.image_size)
+        o = env.reset()
+        score = 0
+        while not done :
+            a = self.act(o)
+            o,r,done,i = env.step(a)
+            if i['ate_apple']:
+                score += 1
+            out.write(np.flip(env.render('rgb'), axis=-1))
+        out.release
+        with open(score_dir, 'w') as f:
+            f.write(str(score))
+        return score
 
 if __name__=='__main__':
     action_space = Discrete(3)
