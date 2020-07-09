@@ -212,7 +212,7 @@ class Player():
         if 'avi' in video_type :
             fcc = 'DIVX'
         elif 'mp4' in video_type:
-            fcc = 'avc1'
+            fcc = 'mp4v'
         else:
             raise TypeError('Wrong videotype')
         fourcc = cv2.VideoWriter_fourcc(*fcc)
