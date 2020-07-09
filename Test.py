@@ -18,7 +18,7 @@ if args.vm :
 # For benchmark
 st = time.time()
 env = gym.make('mouse-v0')
-# env.seed(2)
+env.seed(3)
 o = env.reset()
 player = Player(env.observation_space, env.action_space)
 if args.vm :
