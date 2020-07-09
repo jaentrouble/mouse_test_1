@@ -212,11 +212,11 @@ class Player():
         if 'avi' in video_type :
             fcc = 'DIVX'
         elif 'mp4' in video_type:
-            fcc = 'X264'
+            fcc = 'H264'
         else:
             raise TypeError('Wrong videotype')
         fourcc = cv2.VideoWriter_fourcc(*fcc)
-        # Be careful : cv2 order of image size is (width, height)
+        # Becareful : cv2 order of image size is (width, height)
         eye_out = cv2.VideoWriter(eye_dir, fourcc, 10, (205*5,50))
         out = cv2.VideoWriter(video_dir, fourcc, 10, env.image_size)
         eye_bar = np.ones((5,3),dtype=np.uint8)*np.array([255,255,0],dtype=np.uint8)
