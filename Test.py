@@ -39,5 +39,6 @@ for _ in trange(200):
         o = env.reset()
     if args.vm :
         env.render()
-eye_viewer.close()
+if args.vm:
+    eye_viewer.close()
 print('Total :{} sec'.format(time.time()-st))
