@@ -143,16 +143,21 @@ class CollisionManager():
                 for i in coll_ID:
                     if not(i in checked_ID):
                         checked_ID.append(i)
-                        self._TM.id_(i).collided(self._TM.id_(ID).t_type)
-                        self._TM.id_(ID).collided(self._TM.id_(i).t_type)
+                        colpos = np.swapaxes([coll_r,coll_c],0,1)
+                        i_pos = np.swapaxes(self._TM.indices(i),0,1)
+                        # Make sure it is not hitting a ghost
+                        # This compares row-wise
+                        if (colpos[:,None]==i_pos).all(-1).any():
+                            self._TM.id_(i).collided(self._TM.id_(ID).t_type)
+                            self._TM.id_(ID).collided(self._TM.id_(i).t_type)
 
 
             self._grid[updated_idx[0], updated_idx[1]] = ID
-            reward = mouse.reward
-            ate_apple = mouse.ate_apple()
-            mouse.reset_reward()
-            if mouse.is_dead():
-                reward = -1
-                done = True
+        reward = mouse.reward
+        ate_apple = mouse.ate_apple()
+        mouse.reset_reward()
+        if mouse.is_dead():
+            reward = -1
+            done = True
 
         return reward, done, ate_apple
