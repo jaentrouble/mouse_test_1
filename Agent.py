@@ -211,8 +211,8 @@ class Player():
         score_dir = path.join(self.model_dir, 'score.txt')
         if 'avi' in video_type :
             fcc = 'DIVX'
-        elif 'mkv' in video_type:
-            fcc = 'X264'
+        elif 'mp4' in video_type:
+            fcc = 'avc1'
         else:
             raise TypeError('Wrong videotype')
         fourcc = cv2.VideoWriter_fourcc(*fcc)

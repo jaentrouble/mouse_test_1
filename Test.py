@@ -11,7 +11,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', dest='vm',action='store_true', default=False)
 args = parser.parse_args()
-vid_type = 'mkv'
+vid_type = 'mp4'
 if not args.vm :
     from gym.envs.classic_control.rendering import SimpleImageViewer
     eye_viewer = SimpleImageViewer(maxwidth=1500)
