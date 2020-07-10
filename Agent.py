@@ -79,7 +79,7 @@ class Player():
             self.save_count = 0
         else:
             self.save_dir, self.save_count = path.split(m_dir)
-            self.save_count = int(self.save_count) + 1
+            self.save_count = int(self.save_count)
 
     def eye_model(self, input_shape, left_or_right):
         """
@@ -204,11 +204,16 @@ class Player():
         self.current_steps += 1
 
     def save_model(self):
+        """
+        Return next save file number
+        """
         if not path.exists(self.save_dir):
             makedirs(self.save_dir)
         self.model_dir = path.join(self.save_dir, str(self.save_count))
         self.model.save(self.model_dir)
         self.save_count += 1
+
+        return self.save_count
 
     def evaluate(self, env, video_type):
         print('Evaluating...')
