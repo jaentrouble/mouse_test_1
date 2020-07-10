@@ -14,11 +14,16 @@ parser.add_argument('-v', dest='vm',action='store_true', default=False)
 parser.add_argument('-l', dest='load',default=False)
 parser.add_argument('--step', dest='total_steps',default=100000)
 parser.add_argument('--loop', dest='total_loop',default=20)
+parser.add_argument('--curloop', dest='cur_loop',default=0)
+parser.add_argument('--logname', dest='log_name',default=False)
+parser.add_argument('--curround', dest='cur_r',default=0)
 args = parser.parse_args()
 
 vid_type = 'mp4'
 total_steps = int(args.total_steps)
 total_loop = int(args.total_loop)
+cur_loop = int(args.cur_loop)
+cur_r = int(args.cur_r)
 
 print('starting loop, {} loops left'.format(total_loop))
 if not args.vm :
@@ -31,7 +36,7 @@ env = gym.make('mouse-v0')
 o = env.reset()
 if args.load :
     player = Player(env.observation_space, env.action_space,
-                args.load)
+                args.load, args.log_name, cur_loop*total_steps, cur_r)
 else :
     player = Player(env.observation_space, env.action_space)
 if not args.vm :
@@ -46,7 +51,10 @@ for step in trange(total_steps):
         env.render()
 
 next_save = player.save_model()
-save_dir, _ = os.path.split(args.load)
+if not args.load:
+    save_dir = player.save_dir
+else:
+    save_dir, _ = os.path.split(args.load)
 next_dir = os.path.join(save_dir,str(next_save))
 score = player.evaluate(gym.make('mouse-v0'), vid_type)
 print('eval_score:{0}'.format(score))
@@ -66,4 +74,11 @@ else :
     next_args.append(str(total_steps))
     next_args.append('--loop')
     next_args.append(str(total_loop))
+    next_args.append('--curloop')
+    next_args.append(str(cur_loop+1))
+    next_args.append('--logname')
+    next_args.append(player.log_name)
+    next_args.append('--curround')
+    next_args.append(str(player.rounds))
+    
     os.execv(sys.executable, next_args)

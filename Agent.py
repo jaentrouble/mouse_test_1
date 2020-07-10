@@ -16,7 +16,8 @@ policy = mixed_precision.Policy('mixed_float16')
 mixed_precision.set_policy(policy)
 
 class Player():
-    def __init__(self, observation_space, action_space, m_dir=None):
+    def __init__(self, observation_space, action_space, m_dir=None,
+                 log_name=None, start_step=0, start_round=0):
         """
         model : The actual training model
         t_model : Fixed target model
@@ -58,18 +59,22 @@ class Player():
         self.target_buffer = np.zeros((hp.Buffer_size,self.action_n))
 
         # File writer for tensorboard
-        log_name = datetime.now().strftime('%m_%d_%H_%M_%S')
+        if log_name is None :
+            self.log_name = datetime.now().strftime('%m_%d_%H_%M_%S')
+        else:
+            self.log_name = log_name
         self.file_writer = tf.summary.create_file_writer(path.join('log',
-                                                                log_name))
+                                                         self.log_name))
         self.file_writer.set_as_default()
 
         # Scalars
         self.start_training = False
         self.buffer_full = False
-        self.total_steps = 0
+        self.total_steps = start_step
         self.current_steps = 0
+        self.buffer_count = 0
         self.score = 0
-        self.rounds = 0
+        self.rounds = start_round
         self.cumreward = 0
         
         # Savefile folder directory
@@ -172,10 +177,11 @@ class Player():
                                     self.t_model(after_state, training=False))
         self.target_buffer[self.total_steps%hp.Buffer_size] = self.q[0]
         if not self.start_training :
-            if not self.total_steps % 100 :
+            if not self.buffer_count % 100 :
                 print('filling buffer {0}/{1}'.format(
-                    self.total_steps, hp.Learn_start))
-            if self.total_steps > hp.Learn_start:
+                    self.buffer_count, hp.Learn_start))
+                self.buffer_count += 1
+            if self.buffer_count > hp.Learn_start:
                 self.start_training = True
         else:
             if not self.buffer_full:
@@ -207,11 +213,11 @@ class Player():
         """
         Return next save file number
         """
+        self.save_count += 1
         if not path.exists(self.save_dir):
             makedirs(self.save_dir)
         self.model_dir = path.join(self.save_dir, str(self.save_count))
         self.model.save(self.model_dir)
-        self.save_count += 1
 
         return self.save_count
 
