@@ -7,6 +7,7 @@ import A_hparameters as hp
 from tqdm import trange
 import argparse
 import os
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', dest='vm',action='store_true', default=False)
@@ -46,9 +47,23 @@ for step in trange(total_steps):
 
 next_save = player.save_model()
 save_dir, _ = os.path.split(args.load)
+next_dir = os.path.join(save_dir,str(next_save))
 score = player.evaluate(gym.make('mouse-v0'), vid_type)
 print('eval_score:{0}'.format(score))
 print('{0}steps took {1} sec'.format(total_steps,time.time()-st))
 
 total_loop -= 1
-if 
+if total_loop <= 0 :
+    sys.exit()
+else :
+    next_args = []
+    next_args.append('python')
+    next_args.append(__file__)
+    next_args.append('-v')
+    next_args.append('-l')
+    next_args.append(next_dir)
+    next_args.append('--step')
+    next_args.append(str(total_steps))
+    next_args.append('--loop')
+    next_args.append(str(total_loop))
+    os.execv(sys.executable, next_args)
