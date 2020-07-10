@@ -11,6 +11,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', dest='vm',action='store_true', default=False)
 parser.add_argument('-l', dest='load',default=False)
+parser.add_argument('--step', dest='total_steps',default=2000000)
 args = parser.parse_args()
 vid_type = 'mp4'
 if not args.vm :
@@ -30,7 +31,7 @@ else :
     player = Player(env.observation_space, env.action_space)
 if not args.vm :
     env.render()
-for step in trange(2000000):
+for step in trange(args.total_steps):
     if not step % hp.Model_save:
         player.save_model()
         score = player.evaluate(gym.make('mouse-v0'), vid_type)
