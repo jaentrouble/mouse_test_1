@@ -11,6 +11,7 @@ import cv2
 from gym.spaces import Dict, Discrete, Box
 import numpy as np
 
+keras.backend.clear_session()
 policy = mixed_precision.Policy('mixed_float16')
 mixed_precision.set_policy(policy)
 
