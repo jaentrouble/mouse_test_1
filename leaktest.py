@@ -56,6 +56,6 @@ if leftover_steps >= 0:
         model.fit(X,Y,verbose=False)
         pred = model(np.random.random((1,10))).numpy()
     model.save('try')
-    os.execl(sys.executable, 'python',__file__, '-l try', '--step {}'.format(leftover_steps))
+    os.execl(sys.executable, 'python',__file__, '-l', 'try', '--step', str(leftover_steps))
 else:
     print('done')
