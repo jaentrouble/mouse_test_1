@@ -31,7 +31,7 @@ else :
     player = Player(env.observation_space, env.action_space)
 if not args.vm :
     env.render()
-for step in trange(args.total_steps):
+for step in trange(int(args.total_steps)):
     if not step % hp.Model_save:
         player.save_model()
         score = player.evaluate(gym.make('mouse-v0'), vid_type)
