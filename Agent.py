@@ -15,36 +15,38 @@ policy = mixed_precision.Policy('mixed_float16')
 mixed_precision.set_policy(policy)
 
 class Player():
-    def __init__(self, observation_space, action_space):
+    def __init__(self, observation_space, action_space, m_dir=None):
         """
         model : The actual training model
         t_model : Fixed target model
         """
         self.action_n = action_space.n
         #Inputs
-        left_input = keras.Input(observation_space['Left'].shape,
-                                name='Left')
-        right_input = keras.Input(observation_space['Right'].shape,
-                                name='Right')
-        # Spare eye model for later use
-        left_input_shape = observation_space['Left'].shape
-        right_input_shape = observation_space['Right'].shape
-        self.left_eye_model = self.eye_model(left_input_shape,'Left')
-        self.right_eye_model = self.eye_model(right_input_shape,'Right')
-        # Get outputs of the model
-        left_encoded = self.left_eye_model(left_input)
-        right_encoded = self.right_eye_model(right_input)
-        # Concatenate both eye's inputs
-        concat = layers.Concatenate()([left_encoded,right_encoded])
-        outputs = self.brain_layers(concat)
-        # Build models
-        self.model = keras.Model(inputs=[left_input, right_input],
-                                outputs=outputs)
-        self.model.compile(optimizer='Adam', loss='mse', 
-                            metrics=['mse'])
+        if m_dir is None :
+            left_input = keras.Input(observation_space['Left'].shape,
+                                    name='Left')
+            right_input = keras.Input(observation_space['Right'].shape,
+                                    name='Right')
+            # Spare eye model for later use
+            left_input_shape = observation_space['Left'].shape
+            right_input_shape = observation_space['Right'].shape
+            left_eye_model = self.eye_model(left_input_shape,'Left')
+            right_eye_model = self.eye_model(right_input_shape,'Right')
+            # Get outputs of the model
+            left_encoded = left_eye_model(left_input)
+            right_encoded = right_eye_model(right_input)
+            # Concatenate both eye's inputs
+            concat = layers.Concatenate()([left_encoded,right_encoded])
+            outputs = self.brain_layers(concat)
+            # Build models
+            self.model = keras.Model(inputs=[left_input, right_input],
+                                    outputs=outputs)
+            self.model.compile(optimizer='Adam', loss='mse', 
+                                metrics=['mse'])
+        else:
+            self.model = keras.models.load_model(m_dir)
         self.t_model = keras.models.clone_model(self.model)
         self.t_model.set_weights(self.model.get_weights())
-        self.left_eye_model.summary()
         self.model.summary()
 
         # Buffers
@@ -70,9 +72,13 @@ class Player():
         self.cumreward = 0
         
         # Savefile folder directory
-        self.save_dir = path.join('savefiles',
-                        datetime.now().strftime('%m_%d_%H_%M_%S'))
-        self.save_count = 0
+        if m_dir is None :
+            self.save_dir = path.join('savefiles',
+                            datetime.now().strftime('%m_%d_%H_%M_%S'))
+            self.save_count = 0
+        else:
+            self.save_dir, self.save_count = path.split(m_dir)
+            self.save_count = int(self.save_count) + 1
 
     def eye_model(self, input_shape, left_or_right):
         """
