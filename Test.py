@@ -10,6 +10,7 @@ import argparse
 # To cancel viewer if needed
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', dest='vm',action='store_true', default=False)
+parser.add_argument('-l', dest='load',default=False)
 args = parser.parse_args()
 vid_type = 'mp4'
 if not args.vm :
@@ -22,13 +23,15 @@ st = time.time()
 env = gym.make('mouse-v0')
 # env.seed(3)
 o = env.reset()
-player = Player(env.observation_space, env.action_space)
+if args.load :
+    player = Player(env.observation_space, env.action_space,
+                args.load)
+else :
+    player = Player(env.observation_space, env.action_space)
 if not args.vm :
     env.render()
 for step in trange(2000000):
-    #TODO: implement load_model
-    # Save just before closing (24h)
-    if not step % hp.Model_save or time.time()-st > 23*60*60:
+    if not step % hp.Model_save:
         player.save_model()
         score = player.evaluate(gym.make('mouse-v0'), vid_type)
         print('step {0} eval_score:{1}'.format(step,score))
