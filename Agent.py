@@ -184,7 +184,7 @@ class Player():
                                     self.t_model(after_state, training=False))
         self.target_buffer[self.buffer_count%hp.Buffer_size] = self.q[0]
         if not self.start_training :
-            if self.buffer_count > hp.Learn_start:
+            if self.buffer_count > hp.Learn_start or self.buffer_full:
                 self.start_training = True
             else:
                 self.buffer_count += 1
