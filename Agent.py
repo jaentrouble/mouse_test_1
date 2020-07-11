@@ -203,6 +203,7 @@ class Player():
                 batch_indices = random.sample(range(hp.Buffer_size),
                                               hp.Batch_size)
             self.buffer_count += 1
+            self.buffer_count = self.buffer_count % hp.Buffer_size
             batch_right = self.right_buffer[batch_indices]
             batch_left = self.left_buffer[batch_indices]
             batch_inputs = {'Right':batch_right,
