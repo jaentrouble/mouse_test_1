@@ -27,7 +27,10 @@ total_steps = int(args.total_steps)
 total_loop = int(args.total_loop)
 cur_loop = int(args.cur_loop)
 cur_r = int(args.cur_r)
-buf_full = bool(args.buf_full)
+if 'True' in args.buf_full:
+    buf_full = True
+elif 'False' in args.buf_full:
+    buf_full = False
 load_buffer = bool(args.load_buffer)
 buf_count = int(args.buf_count)
 
