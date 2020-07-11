@@ -48,7 +48,7 @@ else :
     player = Player(env.observation_space, env.action_space)
 if not args.vm :
     env.render()
-for step in trange(total_steps):
+for step in trange(total_steps, ncols=50):
     action = player.act(o)
     o,r,d,i = env.step(action)
     player.step(o,r,d,i)
