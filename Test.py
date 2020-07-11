@@ -17,6 +17,9 @@ parser.add_argument('--loop', dest='total_loop',default=20)
 parser.add_argument('--curloop', dest='cur_loop',default=0)
 parser.add_argument('--logname', dest='log_name',default=False)
 parser.add_argument('--curround', dest='cur_r',default=0)
+parser.add_argument('-bf', dest='buf_full',default=False)
+parser.add_argument('-lb', dest='load_buffer',default=False)
+parser.add_argument('-bc', dest='buf_count', default=0)
 args = parser.parse_args()
 
 vid_type = 'mp4'
@@ -24,6 +27,9 @@ total_steps = int(args.total_steps)
 total_loop = int(args.total_loop)
 cur_loop = int(args.cur_loop)
 cur_r = int(args.cur_r)
+buf_full = bool(args.buf_full)
+load_buffer = bool(args.load_buffer)
+buf_count = int(args.buf_count)
 
 print('starting loop, {} loops left'.format(total_loop))
 if not args.vm :
@@ -36,7 +42,8 @@ env = gym.make('mouse-v0')
 o = env.reset()
 if args.load :
     player = Player(env.observation_space, env.action_space,
-                args.load, args.log_name, cur_loop*total_steps, cur_r)
+                args.load, args.log_name, cur_loop*total_steps, cur_r,
+                buf_full, load_buffer, buf_count)
 else :
     player = Player(env.observation_space, env.action_space)
 if not args.vm :
@@ -80,5 +87,11 @@ else :
     next_args.append(player.log_name)
     next_args.append('--curround')
     next_args.append(str(player.rounds))
+    next_args.append('-bf')
+    next_args.append(str(player.buffer_full))
+    next_args.append('-lb')
+    next_args.append('True')
+    next_args.append('-bc')
+    next_args.append(str(player.buffer_count))
     
     os.execv(sys.executable, next_args)

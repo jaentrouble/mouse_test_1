@@ -17,7 +17,8 @@ mixed_precision.set_policy(policy)
 
 class Player():
     def __init__(self, observation_space, action_space, m_dir=None,
-                 log_name=None, start_step=0, start_round=0):
+                 log_name=None, start_step=0, start_round=0, buf_full=False,
+                 load_buffer=False, buf_count=0):
         """
         model : The actual training model
         t_model : Fixed target model
@@ -52,11 +53,18 @@ class Player():
         self.model.summary()
 
         # Buffers
-        self.right_buffer = np.zeros(np.concatenate(([hp.Buffer_size],
-                            observation_space['Right'].shape)))
-        self.left_buffer = np.zeros(np.concatenate(([hp.Buffer_size],
-                            observation_space['Left'].shape)))
-        self.target_buffer = np.zeros((hp.Buffer_size,self.action_n))
+        if load_buffer:
+            buffers = np.load(path.join(m_dir,'buffer.npz'))
+            self.right_buffer = buffers['Right']
+            self.left_buffer = buffers['Left']
+            self.target_buffer = buffers['Target']
+            buffers.close()
+        else :
+            self.right_buffer = np.zeros(np.concatenate(([hp.Buffer_size],
+                                observation_space['Right'].shape)))
+            self.left_buffer = np.zeros(np.concatenate(([hp.Buffer_size],
+                                observation_space['Left'].shape)))
+            self.target_buffer = np.zeros((hp.Buffer_size,self.action_n))
 
         # File writer for tensorboard
         if log_name is None :
@@ -69,10 +77,10 @@ class Player():
 
         # Scalars
         self.start_training = False
-        self.buffer_full = False
+        self.buffer_full = buf_full
         self.total_steps = start_step
-        self.current_steps = 0
-        self.buffer_count = 0
+        self.current_steps = 1
+        self.buffer_count = buf_count
         self.score = 0
         self.rounds = start_round
         self.cumreward = 0
@@ -141,9 +149,9 @@ class Player():
 
     def act(self, before_state):
         before_state = self.pre_processing(before_state)
-        self.right_buffer[self.total_steps%hp.Buffer_size] = \
+        self.right_buffer[self.buffer_count%hp.Buffer_size] = \
             before_state['Right']
-        self.left_buffer[self.total_steps%hp.Buffer_size] = \
+        self.left_buffer[self.buffer_count%hp.Buffer_size] = \
             before_state['Left']
         self.bef_state = before_state
         self.q = self.model(self.bef_state, training=False).numpy()
@@ -174,19 +182,23 @@ class Player():
         else:
             self.q[0, self.action] = reward + hp.Q_discount*np.max(
                                     self.t_model(after_state, training=False))
-        self.target_buffer[self.total_steps%hp.Buffer_size] = self.q[0]
+        self.target_buffer[self.buffer_count%hp.Buffer_size] = self.q[0]
         if not self.start_training :
-            if not self.buffer_count % 100 :
-                print('filling buffer {0}/{1}'.format(
-                    self.buffer_count, hp.Learn_start))
-                self.buffer_count += 1
             if self.buffer_count > hp.Learn_start:
                 self.start_training = True
-        else:
+            else:
+                self.buffer_count += 1
+                if not self.buffer_count % 100 :
+                    print('filling buffer {0}/{1}'.format(
+                        self.buffer_count, hp.Learn_start))
+        # To check at least once if buffer count is larger than learn start,
+        # DO NOT use else
+        if self.start_training:
             if not self.buffer_full:
-                batch_indices = random.sample(range(self.total_steps),
+                batch_indices = random.sample(range(self.buffer_count),
                                               hp.Batch_size)
-                if self.total_steps >= hp.Buffer_size:
+                self.buffer_count += 1
+                if self.buffer_count > hp.Buffer_size:
                     self.buffer_full = True
             else:
                 batch_indices = random.sample(range(hp.Buffer_size),
@@ -217,6 +229,12 @@ class Player():
             makedirs(self.save_dir)
         self.model_dir = path.join(self.save_dir, str(self.save_count))
         self.model.save(self.model_dir)
+        np.savez(
+            path.join(self.model_dir,'buffer.npz'),
+            Right=self.right_buffer,
+            Left=self.left_buffer,
+            Target=self.target_buffer
+        )
 
         return self.save_count
 
