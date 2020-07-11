@@ -197,13 +197,12 @@ class Player():
             if not self.buffer_full:
                 batch_indices = random.sample(range(self.buffer_count),
                                               hp.Batch_size)
-                self.buffer_count += 1
-                if self.buffer_count > hp.Buffer_size:
+                if self.buffer_count >= hp.Buffer_size:
                     self.buffer_full = True
             else:
                 batch_indices = random.sample(range(hp.Buffer_size),
                                               hp.Batch_size)
-                self.buffer_count += 1
+            self.buffer_count += 1
             batch_right = self.right_buffer[batch_indices]
             batch_left = self.left_buffer[batch_indices]
             batch_inputs = {'Right':batch_right,
